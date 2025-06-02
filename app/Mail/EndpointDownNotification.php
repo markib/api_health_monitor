@@ -8,6 +8,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use App\Models\Endpoint;
 
 class EndpointDownNotification extends Mailable
 {
@@ -23,10 +24,11 @@ class EndpointDownNotification extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct(string $url)
+    public function __construct(public Endpoint $endpoint)
     {
-        $this->url = $url;
+         $this->url = $endpoint->url;
     }
+    
 
     /**
      * Get the message envelope.
@@ -58,10 +60,16 @@ class EndpointDownNotification extends Mailable
         return [];
     }
 
-    public function build()
+    /**
+     * Build the message.
+     */
+    public function build(): self
     {
         return $this->from('alerts@example.com')
             ->subject("{$this->url} is unavailable!")
-            ->text('emails.endpoint-down'); // plain text
+            ->view('emails.endpoint_down')
+            ->with([
+                'endpoint' => $this->endpoint,
+            ]);
     }
 }
