@@ -19,14 +19,14 @@ class EndpointDownNotification extends Mailable
      *
      * @var string
      */
-    public string $url;
+    public Endpoint $endpoint;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(string $url)
+    public function __construct(Endpoint $endpoint)
     {
-         $this->url = $url;
+        $this->endpoint = $endpoint;
     }
     
 
@@ -66,7 +66,7 @@ class EndpointDownNotification extends Mailable
     public function build(): self
     {
         return $this->from('alerts@example.com')
-            ->subject("{$this->url} is unavailable!")
+            ->subject("{$this->endpoint} is unavailable!")
             ->view('emails.endpoint_down')
             ->with([
                 'endpoint' => $this->endpoint,

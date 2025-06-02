@@ -2,6 +2,6 @@
 
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('monitor:endpoints')
+Schedule::command('app:monitor-endpoints')
     ->everyTenMinutes()
     ->withoutOverlapping();

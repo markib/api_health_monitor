@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\CheckEndpointStatus;
 use Illuminate\Console\Command;
 use App\Models\Endpoint;
 use Illuminate\Support\Facades\Http;
@@ -32,18 +33,20 @@ class MonitorEndpoints extends Command
         $endpoints = Endpoint::with('client')->where('is_active', true)->get();
 
         foreach ($endpoints as $endpoint) {
-            try {
-                $response = Http::timeout(8)->get($endpoint->url);
+            // try {
+            //     $response = Http::timeout(8)->get($endpoint->url);
 
-                if (!$response->successful()) {
-                    $this->sendAlert($endpoint);
-                }
-            } catch (\Throwable $e) {
-                $this->sendAlert($endpoint);
-            }
+            //     if (!$response->successful()) {
+            //         $this->sendAlert($endpoint);
+            //     }
+            // } catch (\Throwable $e) {
+            //     $this->sendAlert($endpoint);
+            // }
+            CheckEndpointStatus::dispatch($endpoint);
         }
+        $this->info('Dispatched endpoint check jobs for ' . $endpoints->count() . ' endpoints.');
     }
-    
+
     protected function sendAlert(Endpoint $endpoint): void
     {
         Mail::to($endpoint->client->email)->send(
