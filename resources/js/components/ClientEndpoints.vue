@@ -1,28 +1,57 @@
 <template>
-  <div>
-    <label for="clientSelect" class="block mb-2 font-semibold">Select Client Email:</label>
-    <select id="clientSelect" v-model="selectedClientId" @change="fetchEndpoints" class="mb-4 p-2 border rounded w-full max-w-sm">
+  <div class="p-4 max-w-xl mx-auto">
+    <label for="clientSelect" class="block mb-2 font-semibold text-gray-700">Select Client Email:</label>
+    <select
+      id="clientSelect"
+      v-model="selectedClientId"
+      @change="fetchEndpoints"
+      class="mb-6 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-white"
+    >
       <option value="" disabled>Select a client</option>
       <option v-for="client in clients" :key="client.id" :value="client.id">
         {{ client.email }}
       </option>
     </select>
 
-    <ul v-if="endpoints.length">
-      <li v-for="endpoint in endpoints" :key="endpoint.id" class="mb-2">
-        <a href="#" @click.prevent="confirmVisit(endpoint.url)" class="text-blue-600 underline cursor-pointer">
+    <ul v-if="endpoints.length" class="space-y-3">
+      <li
+        v-for="endpoint in endpoints"
+        :key="endpoint.id"
+        class="bg-gray-50 border border-gray-200 p-4 rounded-lg hover:bg-blue-50 transition"
+      >
+        <a
+          href="#"
+          @click.prevent="confirmVisit(endpoint.url)"
+          class="text-blue-600 hover:text-blue-800 underline font-medium"
+        >
           {{ endpoint.url }}
         </a>
       </li>
     </ul>
 
     <!-- Confirmation Dialog -->
-    <div v-if="showDialog" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div class="bg-white p-6 rounded shadow max-w-sm w-full">
-        <p class="mb-4">You are about to visit <strong>{{ dialogUrl }}</strong>. Proceed?</p>
+    <div
+      v-if="showDialog"
+      class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+    >
+      <div class="bg-white p-6 rounded-xl shadow-xl max-w-sm w-full mx-4">
+        <p class="mb-4 text-gray-800">
+          You are about to visit
+          <strong class="text-blue-700">{{ dialogUrl }}</strong>. Proceed?
+        </p>
         <div class="flex justify-end gap-4">
-          <button @click="proceed" class="bg-blue-600 text-white px-4 py-2 rounded">Proceed</button>
-          <button @click="cancel" class="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+          <button
+            @click="proceed"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow"
+          >
+            Proceed
+          </button>
+          <button
+            @click="cancel"
+            class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded shadow"
+          >
+            Cancel
+          </button>
         </div>
       </div>
     </div>
@@ -33,6 +62,7 @@
 import axios from 'axios';
 
 export default {
+  name: 'ClientEndpointViewer',
   data() {
     return {
       clients: [],
@@ -85,5 +115,12 @@ export default {
 </script>
 
 <style scoped>
-/* Add any custom styles here */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>

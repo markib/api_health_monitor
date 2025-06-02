@@ -24,9 +24,9 @@ class EndpointDownNotification extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct(public Endpoint $endpoint)
+    public function __construct(string $url)
     {
-         $this->url = $endpoint->url;
+         $this->url = $url;
     }
     
 
