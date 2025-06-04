@@ -12,12 +12,13 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class MonitorEndpointsTest extends TestCase
 {
     use RefreshDatabase;
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function it_sends_email_when_endpoint_is_down()
     {
         Mail::fake();
@@ -52,7 +53,7 @@ class MonitorEndpointsTest extends TestCase
         $this->assertEquals('down', $endpoint->last_status);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function test_endpoint_checker_alerts_on_failure(): void
     {
         Mail::fake();
@@ -94,7 +95,7 @@ class MonitorEndpointsTest extends TestCase
         $this->assertEquals('down', $endpoint->last_status);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function test_endpoint_checker_passes_on_success(): void
     {
         // Fake the mailer to track queued emails
@@ -126,6 +127,7 @@ class MonitorEndpointsTest extends TestCase
         $this->assertEquals('up', $endpoint->last_status);
     }
 
+    #[Test]
     public function test_command_dispatches_jobs()
     {
         Queue::fake();
@@ -136,5 +138,19 @@ class MonitorEndpointsTest extends TestCase
             ->assertExitCode(0);
 
         Queue::assertCount(3);
+    }
+
+    #[Test]
+    public function system_supports_500_clients_with_12_endpoints_each()
+    {
+        Client::factory()
+            ->count(500)
+            ->has(Endpoint::factory()->count(12))
+            ->create();
+
+        $this->artisan('app:monitor-endpoints')
+            ->assertExitCode(0);
+
+        $this->assertEquals(6000, Endpoint::count());
     }
 }

@@ -48,7 +48,7 @@ class EndpointDownNotification extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'emails.endpoint-down',
             with: ['endpoint' => $this->endpoint]
         );
     }

@@ -31,21 +31,31 @@ class MonitorEndpoints extends Command
      */
     public function handle()
     {
-        $endpoints = Endpoint::with('client')->where('is_active', true)->get();
+        // $endpoints = Endpoint::with('client')->where('is_active', true)->get();
 
-        foreach ($endpoints as $endpoint) {
-            // try {
-            //     $response = Http::timeout(8)->get($endpoint->url);
+        // foreach ($endpoints as $endpoint) {
+        //     // try {
+        //     //     $response = Http::timeout(8)->get($endpoint->url);
 
-            //     if (!$response->successful()) {
-            //         $this->sendAlert($endpoint);
-            //     }
-            // } catch (\Throwable $e) {
-            //     $this->sendAlert($endpoint);
-            // }
-            CheckEndpointStatus::dispatch($endpoint);
-        }
-        $this->info('Dispatched endpoint check jobs for ' . $endpoints->count() . ' endpoints.');
+        //     //     if (!$response->successful()) {
+        //     //         $this->sendAlert($endpoint);
+        //     //     }
+        //     // } catch (\Throwable $e) {
+        //     //     $this->sendAlert($endpoint);
+        //     // }
+        //     CheckEndpointStatus::dispatch($endpoint);
+        // }
+        $chunkSize = 100; // Process in batches
+
+        Endpoint::active()->chunk($chunkSize, function ($endpoints) {
+            $endpoints->each(function ($endpoint) {
+                CheckEndpointStatus::dispatch($endpoint)
+                    ->onQueue('monitoring');
+            });
+
+            sleep(1); // Add delay between chunks
+        });
+        // $this->info('Dispatched endpoint check jobs for ' . $endpoints->count() . ' endpoints.');
     }
 
     protected function sendAlert(Endpoint $endpoint): void
