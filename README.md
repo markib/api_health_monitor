@@ -1,61 +1,143 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# API Health Monitoring Application
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This is a Laravel 12-based API health monitoring application designed to monitor client API endpoints, send email alerts on failures, and display client endpoints via a Vue.js Single Page Application (SPA). The application is built to be scalable, supporting hundreds of clients with up to 12 endpoints each, and is deployed on a LAMP stack with Redis for queuing.
 
-## About Laravel
+## Features
+- **Client Input**: Manually enter client email addresses and API endpoints into the database.
+- **Monitoring**: Checks each endpoint every 10 minutes via HTTP GET requests, with an 8-second timeout.
+- **Alerts**: Sends email notifications (via AWS SES) when an endpoint is unreachable or returns a non-2xx status code.
+- **Frontend**: Vue.js SPA with a dropdown to select clients and display their endpoints as clickable links with confirmation dialogs.
+- **Scalability**: Uses Redis for queuing, chunked database queries, and efficient HTTP requests to handle large client volumes.
+- **Testing**: Includes feature tests for endpoint monitoring.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Requirements
+- **PHP**: ^8.2
+- **Laravel**: ^12.0
+- **Node.js**: ^18.0 or higher
+- **MySQL/MariaDB**: For storing client and endpoint data
+- **Redis**: For queue management
+- **AWS SES**: For email notifications
+- **Composer**: For PHP dependencies
+- **npm**: For frontend dependencies
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Installation
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/yourusername/api-health-monitor.git
+   cd api-health-monitor
+   ```
 
-## Learning Laravel
+2. **Install Dependencies**
+   ```bash
+   composer install
+   npm install
+   ```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+3. **Configure Environment**
+   - Copy `.env.example` to `.env`:
+     ```bash
+     cp .env.example .env
+     ```
+   - Update `.env` with your database, Redis, and AWS SES credentials:
+     ```
+     DB_CONNECTION=mysql
+     DB_HOST=127.0.0.1
+     DB_PORT=3306
+     DB_DATABASE=api_health_monitor
+     DB_USERNAME=your_username
+     DB_PASSWORD=your_password
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+     QUEUE_CONNECTION=redis
+     REDIS_HOST=127.0.0.1
+     REDIS_PORT=6379
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+     MAIL_MAILER=ses
+     AWS_ACCESS_KEY_ID=your_access_key
+     AWS_SECRET_ACCESS_KEY=your_secret_key
+     AWS_DEFAULT_REGION=us-east-1
+     ```
 
-## Laravel Sponsors
+4. **Generate Application Key**
+   ```bash
+   php artisan key:generate
+   ```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+5. **Run Migrations**
+   ```bash
+   php artisan migrate
+   ```
 
-### Premium Partners
+6. **Build Frontend**
+   ```bash
+   npm run build
+   ```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+7. **Start Queue Worker**
+   ```bash
+   php artisan queue:work --queue=emails
+   ```
+
+8. **Schedule Endpoint Checks**
+   - Add the following cron job to run the Laravel scheduler every minute:
+     ```bash
+     * * * * * cd /path/to/api-health-monitor && php artisan schedule:run >> /dev/null 2>&1
+     ```
+
+9. **Serve the Application**
+   ```bash
+   php artisan serve
+   ```
+   Access the application at `http://localhost:8000`.
+
+## Usage
+- **Add Clients and Endpoints**: Manually insert client emails and their API endpoints into the `clients` and `endpoints` tables in the database.
+- **Monitoring**: The `endpoints:check` command runs every 10 minutes to check all endpoints. If an endpoint fails (non-2xx status or timeout), an email is sent to the client.
+- **Frontend**: Navigate to the homepage, select a client from the dropdown, and view their endpoints as clickable links. Clicking a link prompts a confirmation dialog before opening the URL in a new tab.
+
+## Project Structure
+```
+api-health-monitor/
+├── app/
+│   ├── Console/Commands/CheckEndpoints.php        # Command to check endpoints
+│   ├── Http/Controllers/ClientController.php      # API controller for client data
+│   ├── Jobs/SendAlertEmail.php                    # Queued job for email alerts
+│   ├── Mail/EndpointDown.php                      # Mailable for alert emails
+│   ├── Models/                                    # Eloquent models
+│   └── Services/EndpointChecker.php               # Service for checking endpoints
+├── database/migrations/                          # Database schema
+├── resources/
+│   ├── js/                                       # Vue.js SPA
+│   └── views/                                    # Blade templates
+├── routes/                                       # API and web routes
+├── tests/Feature/EndpointMonitoringTest.php       # Feature tests
+├── composer.json                                  # PHP dependencies
+├── package.json                                   # Frontend dependencies
+└── README.md
+```
+
+## Testing
+Run the test suite using Pest or PHPUnit:
+```bash
+php artisan test
+```
+The tests verify endpoint monitoring and email queuing for both successful and failed requests.
+
+## Scalability Considerations
+- **Database**: Indexes on `clients.email` and `endpoints.client_id` for fast queries.
+- **Queueing**: Redis-backed queues for email notifications to handle high volumes.
+- **Chunking**: Processes endpoints in chunks of 100 to optimize memory usage.
+- **HTTP Requests**: Uses Laravel’s `Http` facade with an 8-second timeout for efficiency.
+
+## Troubleshooting
+- **Queue Issues**: Ensure Redis is running and the queue worker is active.
+- **Email Failures**: Verify AWS SES credentials and region in `.env`.
+- **Frontend Errors**: Run `npm run build` to ensure Vite compiles assets correctly.
 
 ## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- Follow Laravel coding standards (use `laravel/pint` for linting).
+- Submit pull requests with clear descriptions of changes.
+- Add tests for new features or bug fixes.
 
 ## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is licensed under the MIT License.
