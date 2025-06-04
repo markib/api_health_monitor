@@ -15,9 +15,9 @@ class EndpointDownNotification extends Mailable
     use Queueable, SerializesModels;
 
     /**
-     * The URL of the endpoint that is down.
+     * The endpoint instance.
      *
-     * @var string
+     * @var \App\Models\Endpoint
      */
     public Endpoint $endpoint;
 
@@ -35,8 +35,10 @@ class EndpointDownNotification extends Mailable
      */
     public function envelope(): Envelope
     {
+        
         return new Envelope(
-            subject: 'Endpoint Down Notification',
+            from: 'alerts@example.com',
+            subject: "{$this->endpoint->url} is unavailable!"
         );
     }
 
@@ -47,6 +49,7 @@ class EndpointDownNotification extends Mailable
     {
         return new Content(
             view: 'view.name',
+            with: ['endpoint' => $this->endpoint]
         );
     }
 

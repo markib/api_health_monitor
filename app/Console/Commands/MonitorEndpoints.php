@@ -8,6 +8,7 @@ use App\Models\Endpoint;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\EndpointDownNotification;
+use Illuminate\Support\Facades\Log;
 
 class MonitorEndpoints extends Command
 {
@@ -49,8 +50,13 @@ class MonitorEndpoints extends Command
 
     protected function sendAlert(Endpoint $endpoint): void
     {
-        Mail::to($endpoint->client->email)->send(
-            new EndpointDownNotification($endpoint->url)
-        );
+        try{
+            Mail::to($endpoint->client->email)->send(
+                new EndpointDownNotification($endpoint->url)
+            );
+        } catch (\Throwable $e) {
+            Log::error("Failed to send alert for endpoint {$endpoint->url}: " . $e->getMessage());
+        }
+        
     }
 }

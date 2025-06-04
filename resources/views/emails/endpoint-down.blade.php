@@ -1,9 +1,12 @@
-<!DOCTYPE html>
-<html>
+<x-mail::message>
+    # Endpoint Down: {{ $endpoint->url }}
 
-<body>
-    <h2>⚠️ Endpoint Down</h2>
-    <p>The endpoint <strong>{{ $endpoint->url }}</strong> is currently unreachable.</p>
-</body>
+    The endpoint you're monitoring is currently unavailable.
 
-</html>
+    <x-mail::button :url="url('/api/clients/' . $client->id)">
+        View Client
+    </x-mail::button>
+
+    Thanks,<br>
+    {{ config('app.name') }}
+</x-mail::message>

@@ -15,4 +15,9 @@ class Endpoint extends Model
     {
         return $this->belongsTo(Client::class);
     }
+    
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
 }
