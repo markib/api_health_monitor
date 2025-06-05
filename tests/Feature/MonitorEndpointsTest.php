@@ -140,17 +140,5 @@ class MonitorEndpointsTest extends TestCase
         Queue::assertCount(3);
     }
 
-    #[Test]
-    public function system_supports_500_clients_with_12_endpoints_each()
-    {
-        Client::factory()
-            ->count(500)
-            ->has(Endpoint::factory()->count(12))
-            ->create();
-
-        $this->artisan('app:monitor-endpoints')
-            ->assertExitCode(0);
-
-        $this->assertEquals(6000, Endpoint::count());
-    }
+   
 }

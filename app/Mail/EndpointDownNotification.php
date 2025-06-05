@@ -2,13 +2,13 @@
 
 namespace App\Mail;
 
+use App\Models\Endpoint;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Endpoint;
 
 class EndpointDownNotification extends Mailable
 {
@@ -28,14 +28,12 @@ class EndpointDownNotification extends Mailable
     {
         $this->endpoint = $endpoint;
     }
-    
 
     /**
      * Get the message envelope.
      */
     public function envelope(): Envelope
     {
-        
         return new Envelope(
             from: 'alerts@example.com',
             subject: "{$this->endpoint->url} is unavailable!"
@@ -48,8 +46,9 @@ class EndpointDownNotification extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.endpoint-down',
-            with: ['endpoint' => $this->endpoint]
+            markdown: 'emails.endpoint-down',
+            with: ['endpoint' => $this->endpoint,
+            'client' => $this->endpoint->client]
         );
     }
 
