@@ -33,28 +33,24 @@ class MonitorEndpoints extends Command
      */
     public function handle()
     {
-        // $endpoints = Endpoint::with('client')->where('is_active', true)->get();
-
-        // foreach ($endpoints as $endpoint) {
-        //     // try {
-        //     //     $response = Http::timeout(8)->get($endpoint->url);
-
-        //     //     if (!$response->successful()) {
-        //     //         $this->sendAlert($endpoint);
-        //     //     }
-        //     // } catch (\Throwable $e) {
-        //     //     $this->sendAlert($endpoint);
-        //     // }
-        //     CheckEndpointStatus::dispatch($endpoint);
-        // }
+        
         $sync = $this->option('sync');
         $chunkSize = 500; // Process in batches
 
+        Log::info('Starting endpoint monitoring process.', [
+            'mode' => $sync ? 'sync' : 'queue',
+            'chunkSize' => $chunkSize
+        ]);
+
         Endpoint::active()->chunk($chunkSize, function ($endpoints)  use ($sync) {
+            Log::info('Processing new chunk', ['count' => $endpoints->count()]);
+
             $endpoints->each(function ($endpoint) use ($sync) {
                 if ($sync) {
+                    Log::info("Checking endpoint synchronously: {$endpoint->url}");
                     (new CheckEndpointStatus($endpoint))->handle(); // run inline
                 } else {
+                    Log::info("Dispatching job for endpoint: {$endpoint->url}");
                     CheckEndpointStatus::dispatch($endpoint)->onQueue('monitoring');
                 }
             });
@@ -62,7 +58,8 @@ class MonitorEndpoints extends Command
             sleep(1); // Add delay between chunks
             }
         });
-        // $this->info('Dispatched endpoint check jobs for ' . $endpoints->count() . ' endpoints.');
+        $this->info('Dispatched endpoint check jobs successfully.');
+        Log::info('Endpoint monitoring process completed.');
     }
 
     protected function sendAlert(Endpoint $endpoint): void

@@ -1,7 +1,9 @@
 <?php
 
-use Illuminate\Support\Facades\Schedule;
+use Illuminate\Console\Scheduling\Schedule;
 
-Schedule::command('app:monitor-endpoints')
-    ->everyTenMinutes()
+return function (Schedule $schedule) {
+    $schedule->command('app:monitor-endpoints')
+         ->everyTenMinutes()
     ->withoutOverlapping();
+};
