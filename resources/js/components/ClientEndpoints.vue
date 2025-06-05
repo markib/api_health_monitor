@@ -1,126 +1,95 @@
 <template>
-  <div class="p-4 max-w-xl mx-auto">
-    <label for="clientSelect" class="block mb-2 font-semibold text-gray-700">Select Client Email:</label>
-    <select
-      id="clientSelect"
-      v-model="selectedClientId"
-      @change="fetchEndpoints"
-      class="mb-6 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-white"
-    >
-      <option value="" disabled>Select a client</option>
-      <option v-for="client in clients" :key="client.id" :value="client.id">
-        {{ client.email }}
-      </option>
-    </select>
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl mb-4">API Health Monitoring</h1>
+        <select v-model="selectedClient" @change="fetchEndpoints" class="border p-2 mb-4 w-full">
+            <option value="">Select a client</option>
+            <option v-for="client in clients" :key="client.id" :value="client.id">{{ client.email }}</option>
+        </select>
+        <ul v-if="endpoints.length" class="list-disc pl-5">
+            <li v-for="endpoint in endpoints" :key="endpoint.id">
+                <a href="#" @click.prevent="confirmVisit(endpoint.url)">{{ endpoint.url }}</a>
+            </li>
+        </ul>
+        <p v-else-if="selectedClient && !loading">No endpoints found.</p>
+        <p v-if="loading">Loading...</p>
 
-    <ul v-if="endpoints.length" class="space-y-3">
-      <li
-        v-for="endpoint in endpoints"
-        :key="endpoint.id"
-        class="bg-gray-50 border border-gray-200 p-4 rounded-lg hover:bg-blue-50 transition"
-      >
-        <a
-          href="#"
-          @click.prevent="confirmVisit(endpoint.url)"
-          class="text-blue-600 hover:text-blue-800 underline font-medium"
-        >
-          {{ endpoint.url }}
-        </a>
-      </li>
-    </ul>
-
-    <!-- Confirmation Dialog -->
-    <div
-      v-if="showDialog"
-      class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-    >
-      <div class="bg-white p-6 rounded-xl shadow-xl max-w-sm w-full mx-4">
-        <p class="mb-4 text-gray-800">
-          You are about to visit
-          <strong class="text-blue-700">{{ dialogUrl }}</strong>. Proceed?
-        </p>
-        <div class="flex justify-end gap-4">
-          <button
-            @click="proceed"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow"
-          >
-            Proceed
-          </button>
-          <button
-            @click="cancel"
-            class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded shadow"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
+        <dialog ref="confirmDialog" class="p-4 rounded">
+            <p>You are about to visit <span class="font-bold">{{ dialogUrl }}</span>. Proceed?</p>
+            <div class="mt-4 flex justify-end gap-2">
+                <button @click="proceed" class="bg-blue-500 text-white px-4 py-2 rounded">Proceed</button>
+                <button @click="cancel" class="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+            </div>
+        </dialog>
     </div>
-  </div>
 </template>
 
-<script>
-import axios from 'axios';
+<script setup>
+import { ref, onMounted } from 'vue';
 
-export default {
-  name: 'ClientEndpointViewer',
-  data() {
-    return {
-      clients: [],
-      selectedClientId: '',
-      endpoints: [],
-      showDialog: false,
-      dialogUrl: '',
-    };
-  },
-  mounted() {
-    this.fetchClients();
-  },
-  methods: {
-    async fetchClients() {
-      try {
-        const res = await axios.get('/api/clients');
-        this.clients = res.data;
-      } catch (error) {
-        console.error('Failed to fetch clients:', error);
-      }
-    },
-    async fetchEndpoints() {
-      if (!this.selectedClientId) {
-        this.endpoints = [];
+const clients = ref([]);
+const selectedClient = ref('');
+const endpoints = ref([]);
+const loading = ref(false);
+const dialogUrl = ref('');
+const confirmDialog = ref(null);
+
+onMounted(() => {
+    fetchClients();
+});
+
+async function fetchClients() {
+    try {
+        const response = await fetch('/api/clients');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+        }
+        clients.value = await response.json();
+    } catch (error) {
+        console.error('Error fetching clients:', error);
+    }
+}
+
+async function fetchEndpoints() {
+    if (!selectedClient.value) {
+        endpoints.value = [];
         return;
-      }
-      try {
-        const res = await axios.get(`/api/clients/${this.selectedClientId}`);
-        this.endpoints = res.data;
-      } catch (error) {
-        console.error('Failed to fetch endpoints:', error);
-        this.endpoints = [];
-      }
-    },
-    confirmVisit(url) {
-      this.dialogUrl = url;
-      this.showDialog = true;
-    },
-    proceed() {
-      window.open(this.dialogUrl, '_blank');
-      this.showDialog = false;
-      this.dialogUrl = '';
-    },
-    cancel() {
-      this.showDialog = false;
-      this.dialogUrl = '';
-    },
-  },
-};
+    }
+    loading.value = true;
+    try {
+        const response = await fetch(`/api/clients/${selectedClient.value}`);
+        if (!response.ok) {
+            const text = await response.text();
+            console.error('Fetch endpoints failed: HTTP ${response.status}, Response: ${text}');
+            throw new Error(`HTTP ${response.status}: ${text}`);
+        }
+        endpoints.value = await response.json();
+    } catch (error) {
+        console.error('Error fetching endpoints:', error);
+        endpoints.value = [];
+    } finally {
+        loading.value = false;
+    }
+}
+
+function confirmVisit(url) {
+    dialogUrl.value = url;
+    confirmDialog.value.showModal();
+}
+
+function proceed() {
+    window.open(dialogUrl.value, '_blank');
+    cancel();
+}
+
+function cancel() {
+    confirmDialog.value.close();
+    dialogUrl.value = '';
+}
 </script>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+dialog {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 </style>

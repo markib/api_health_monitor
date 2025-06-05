@@ -22,13 +22,13 @@ class EndpointSeeder extends Seeder
         Client::all()->each(function ($client) {
             // 2 working endpoints (200 OK)
             Endpoint::factory()->createMany([
-                ['client_id' => $client->id, 'url' => 'https://httpstat.us/200'],
+                ['client_id' => $client->id, 'url' => 'http://test-endpoint.local/success'],
                 ['client_id' => $client->id, 'url' => 'https://httpstat.us/204'],
             ]);
 
             // 2 failing endpoints (500 & 404)
             Endpoint::factory()->createMany([
-                ['client_id' => $client->id, 'url' => 'https://httpstat.us/500'],
+                ['client_id' => $client->id, 'url' => 'http://test-endpoint.local/fail'],
                 ['client_id' => $client->id, 'url' => 'https://httpstat.us/404'],
             ]);
 
