@@ -17,7 +17,7 @@ class MonitorEndpoints extends Command
      *
      * @var string
      */
-    protected $signature = 'app:monitor-endpoints';
+    protected $signature = 'app:monitor-endpoints {--sync : Run jobs synchronously}';
 
     /**
      * The console command description.
@@ -25,6 +25,8 @@ class MonitorEndpoints extends Command
      * @var string
      */
     protected $description = 'Monitor API endpoints and send alerts if any are down.';
+
+
 
     /**
      * Execute the console command.
@@ -45,15 +47,20 @@ class MonitorEndpoints extends Command
         //     // }
         //     CheckEndpointStatus::dispatch($endpoint);
         // }
-        $chunkSize = 100; // Process in batches
+        $sync = $this->option('sync');
+        $chunkSize = 500; // Process in batches
 
-        Endpoint::active()->chunk($chunkSize, function ($endpoints) {
-            $endpoints->each(function ($endpoint) {
-                CheckEndpointStatus::dispatch($endpoint)
-                    ->onQueue('monitoring');
+        Endpoint::active()->chunk($chunkSize, function ($endpoints)  use ($sync) {
+            $endpoints->each(function ($endpoint) use ($sync) {
+                if ($sync) {
+                    (new CheckEndpointStatus($endpoint))->handle(); // run inline
+                } else {
+                    CheckEndpointStatus::dispatch($endpoint)->onQueue('monitoring');
+                }
             });
-
+            if (! $sync) {
             sleep(1); // Add delay between chunks
+            }
         });
         // $this->info('Dispatched endpoint check jobs for ' . $endpoints->count() . ' endpoints.');
     }

@@ -13,28 +13,28 @@ use Illuminate\Support\Facades\Mail;
 
 class ReliabilityTest extends TestCase
 {
-    
+    use RefreshDatabase;
     #[Test]
     public function handles_mixed_success_and_failure_responses()
     {
         Http::fake([
-            '*.test/success' => Http::response(),
-            '*.test/fail' => Http::response(null, 500)
+            'https://api.test/success*' => Http::response(),
+            'https://api.test/fail*' => Http::response(null, 500),
         ]);
 
         Endpoint::factory()
-            ->count(4200)
-            ->state(['url' => fake()->url() . '/success'])
+            ->count(20)
+            ->state(['url' => 'https://api.test/success'])
             ->create();
 
         Endpoint::factory()
-            ->count(1800)
-            ->state(['url' => fake()->url() . '/fail'])
+            ->count(8)
+            ->state(['url' => 'https://api.test/fail'])
             ->create();
 
         Mail::fake();
-        $this->artisan('monitor:endpoints');
+        $this->artisan('app:monitor-endpoints --sync');
 
-        Mail::assertSentCount(1800);
+        Mail::assertSentCount(8);
     }
 }

@@ -7,6 +7,7 @@ use App\Mail\EndpointDownNotification;
 use App\Models\Client;
 use App\Models\Endpoint;
 use App\Services\EndpointMonitorService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
@@ -14,6 +15,8 @@ use Tests\TestCase;
 
 class EndpointMonitorServiceTest extends TestCase
 {
+    use RefreshDatabase;
+    
     public function test_it_dispatches_job_for_valid_endpoint()
     {
         Queue::fake();
