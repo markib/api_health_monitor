@@ -20,10 +20,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $scheduleCallback = require base_path('routes/schedule.php');
+        // $scheduleCallback = require base_path('routes/schedule.php');
 
-        $schedule = app(Schedule::class);
+        // $schedule = app(Schedule::class);
 
-        $scheduleCallback($schedule);
+        // $scheduleCallback($schedule);
     }
 }
