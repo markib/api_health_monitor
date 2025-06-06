@@ -35,7 +35,7 @@ class MonitorEndpoints extends Command
     {
         
         $sync = $this->option('sync');
-        $chunkSize = 500; // Process in batches
+        $chunkSize = 100; // Process in batches
 
         Log::info('Starting endpoint monitoring process.', [
             'mode' => $sync ? 'sync' : 'queue',

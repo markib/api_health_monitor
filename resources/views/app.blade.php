@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ config('app.name', 'Vue Laravel SPA') }}</title>
     <meta name="theme-color" content="#6777ef" />
-    <link rel="apple-touch-icon" href="{{ asset('img/icons/apple-touch-icon.png') }}">
+    
     <link rel="manifest" href="{{ asset('/manifest.json') }}">
 
     @vite(['resources/js/app.js'])

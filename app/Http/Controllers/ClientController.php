@@ -13,7 +13,9 @@ class ClientController extends Controller
     public function index()
     {
         try {
-            $clients = Cache::remember('clients_with_endpoints', 60, function () {
+            
+
+            $clients = Cache::store('redis')->remember('clients_with_endpoints', 60, function () {
                 return Client::with(['endpoints' => function ($query) {
                     $query->limit(12);
                 }])->get();
@@ -35,7 +37,7 @@ class ClientController extends Controller
         try {
             $cacheKey = 'client_' . $client->id . '_endpoints';
             
-            $endpoints = Cache::remember($cacheKey, 60, function () use ($client) {
+            $endpoints = Cache::store('redis')->remember($cacheKey, 60, function () use ($client) {
                 return $client->endpoints()->select('id', 'url','client_id')->with(['latestResult:id,endpoint_id,is_healthy,created_at,response_time_ms,error_message,checked_at'])->get();
             });
 
