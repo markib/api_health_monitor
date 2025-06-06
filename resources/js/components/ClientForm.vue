@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue';
-import { useForm, Head } from '@inertiajs/vue3';
+import { useForm, Head } from '@inertiajs/inertia-vue3';
+
+// Define emitted events: 'clientSubmitted' will be emitted when a client is successfully added
+const emit = defineEmits(['clientSubmitted']);
 
 // Form data reactive object using Inertia's useForm
 const form = useForm({
@@ -41,19 +44,24 @@ const submitForm = () => {
 
     // Transform endpoints string into an array for submission
     // Inertia's useForm handles the actual POST request
-    form.post('/api/submit-data', {
+    // This assumes you have a Laravel POST route at '/api/clients'
+    // that handles storing the client and invalidates the Redis cache.
+    form.post('/api/clients', { // POSTs to the /api/clients route managed by ClientSubmissionController
         preserveScroll: true, // Keep scroll position after submission
         onSuccess: () => {
             showMessage('Form submitted successfully! Your data has been received.', 'success');
             // Clear form fields after successful submission
             form.reset('email', 'endpoints');
             message.value = ''; // Clear message after success
+            // Emit an event to the parent component to signal that a new client was submitted
+            emit('clientSubmitted');
         },
         onError: (errors) => {
             // Inertia automatically populates form.errors with validation errors
             console.error('Submission failed:', errors);
             if (errors && Object.keys(errors).length > 0) {
                 // Display the first error message or a generic one
+                // You might iterate over errors for more detailed display
                 showMessage(`Submission failed: ${Object.values(errors)[0]}`, 'error');
             } else {
                 showMessage('An unknown error occurred during submission.', 'error');
@@ -121,11 +129,11 @@ const submitForm = () => {
                     <template v-if="form.processing">
                         <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                     </template>
                     <template v-else>
-                        Submit Information
+                        Submit
                     </template>
                 </button>
             </form>
@@ -147,9 +155,3 @@ const submitForm = () => {
     </div>
 </template>
 
-<style>
-/* Custom font for better aesthetics */
-body {
-    font-family: "Inter", sans-serif;
-}
-</style>

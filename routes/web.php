@@ -4,15 +4,19 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Models\Client;
+use Illuminate\Support\Facades\Redis;
 
+// Route::get('/', function () {
+//     $clients = Client::all();
+//     return Inertia::render('App', ['clients' => $clients]);
+// });
 
 Route::get('/', function () {
-    $clients = Client::all();
-    return Inertia::render('App', ['clients' => $clients]);
+    return Inertia::render('Dashboard'); // Renders your Dashboard.vue component
 });
 
 
-use Illuminate\Support\Facades\Redis;
+
 
 Route::get('/test-redis', function () {
     try {

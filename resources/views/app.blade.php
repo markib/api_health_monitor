@@ -4,12 +4,16 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ config('app.name', 'Vue Laravel SPA') }}</title>
+    <title>{{ config('app.name', 'API Health monitoring') }}</title>
     <meta name="theme-color" content="#6777ef" />
-    
+
     <link rel="manifest" href="{{ asset('/manifest.json') }}">
 
-    @vite(['resources/js/app.js'])
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Instrument+Sans:wght@400;700&display=swap" rel="stylesheet">
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     @inertiaHead
 </head>
 
