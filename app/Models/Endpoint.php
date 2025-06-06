@@ -27,6 +27,6 @@ class Endpoint extends Model
     }
     public function latestResult()
     {
-        return $this->hasOne(MonitoringResult::class)->latestOfMany();
+        return $this->hasOne(MonitoringResult::class);
     }
 }

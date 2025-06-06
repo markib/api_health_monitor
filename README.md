@@ -51,11 +51,22 @@ This is a Laravel 12-based API health monitoring application designed to monitor
      QUEUE_CONNECTION=redis
      REDIS_HOST=127.0.0.1
      REDIS_PORT=6379
+     REDIS_CLIENT=predis
+     REDIS_PASSWORD=null
+     REDIS_DB=0
 
-     MAIL_MAILER=ses
-     AWS_ACCESS_KEY_ID=your_access_key
-     AWS_SECRET_ACCESS_KEY=your_secret_key
-     AWS_DEFAULT_REGION=us-east-1
+     MAIL_MAILER=smtp
+     MAIL_SCHEME=null
+     MAIL_HOST=sandbox.smtp.mailtrap.io
+     MAIL_PORT=587
+     MAIL_USERNAME=your_username
+     MAIL_PASSWORD=your_password
+     MAIL_ENCRYPTION=tls
+     MAIL_FROM_ADDRESS="alerts@example.com"
+     MAIL_FROM_NAME="${APP_NAME}"
+
+     VITE_APP_NAME="${APP_NAME}"
+     VITE_APP_URL="${APP_URL}"
      ```
 
 4. **Generate Application Key**
@@ -75,7 +86,7 @@ This is a Laravel 12-based API health monitoring application designed to monitor
 
 7. **Start Queue Worker**
    ```bash
-   php artisan queue:work --queue=emails
+   php artisan queue:work redis --queue=monitoring --tries=3 --timeout=60
    ```
 
 8. **Schedule Endpoint Checks**
@@ -131,7 +142,7 @@ The tests verify endpoint monitoring and email queuing for both successful and f
 
 ## Troubleshooting
 - **Queue Issues**: Ensure Redis is running and the queue worker is active.
-- **Email Failures**: Verify AWS SES credentials and region in `.env`.
+- **Email Failures**: Verify  credentials and region in `.env`.
 - **Frontend Errors**: Run `npm run build` to ensure Vite compiles assets correctly.
 
 ## Contributing

@@ -26,7 +26,7 @@
                              <td class="border p-2" :class="endpoint.latest_result?.is_healthy ? 'text-green-500' : 'text-red-500'">
                                  {{ endpoint.latest_result?.is_healthy ? 'Healthy' : 'Unhealthy' }}
                              </td>
-                             <td class="border p-2">{{ endpoint.latest_result?.checked_at || 'N/A' }}</td>
+                             <td class="border p-2">{{ endpoint.latest_result?.human_time || 'N/A' }}</td>
                              <td class="border p-2">{{ endpoint.latest_result?.response_time_ms ? endpoint.latest_result.response_time_ms + ' ms' : 'N/A' }}</td>
                              <td class="border p-2">{{ endpoint.latest_result?.error_message || 'N/A' }}</td>
                          </tr>

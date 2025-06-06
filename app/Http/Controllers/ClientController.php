@@ -34,9 +34,9 @@ class ClientController extends Controller
     {
         try {
             $cacheKey = 'client_' . $client->id . '_endpoints';
-
+            
             $endpoints = Cache::remember($cacheKey, 60, function () use ($client) {
-                return $client->endpoints()->select('id', 'url')->get();
+                return $client->endpoints()->select('id', 'url','client_id')->with(['latestResult:id,endpoint_id,is_healthy,created_at,response_time_ms,error_message,checked_at'])->get();
             });
 
             return response()->json($endpoints, 200);
