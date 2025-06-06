@@ -20,4 +20,13 @@ class Endpoint extends Model
     {
         return $query->where('is_active', true);
     }
+
+    public function monitoringResults()
+    {
+        return $this->hasMany(MonitoringResult::class);
+    }
+    public function latestResult()
+    {
+        return $this->hasOne(MonitoringResult::class)->latestOfMany();
+    }
 }
