@@ -111,19 +111,47 @@ const cancelVisit = () => {
 
         <!-- Display Endpoints for Selected Client -->
         <div v-if="selectedClientEndpoints.length > 0">
-            <h3 class="text-lg font-medium text-gray-700 mb-3">Endpoints:</h3>
-            <ul class="list-disc list-inside space-y-2">
-                <li v-for="endpoint in selectedClientEndpoints" :key="endpoint.id" class="text-gray-600">
-                    <a
-                        href="#"
-                        @click.prevent="confirmVisit(endpoint.url)"
-                        class="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-150"
+    <h3 class="text-lg font-medium text-gray-700 mb-3">
+    Endpoints ({{ selectedClientEndpoints.length }})
+</h3>
+    <ul class="space-y-4">
+        <li
+            v-for="endpoint in selectedClientEndpoints"
+            :key="endpoint.id"
+            class="bg-white p-4 rounded-lg shadow-sm border border-gray-200"
+        >
+            <div class="text-blue-600 font-semibold">
+                <a
+                    href="#"
+                    @click.prevent="confirmVisit(endpoint.url)"
+                    class="hover:text-blue-800 hover:underline"
+                >
+                    {{ endpoint.url }}
+                </a>
+            </div>
+
+            <div class="text-sm text-gray-700 mt-2">
+                <p>
+                    <strong>Status:</strong>
+                    <span
+                        :class="{
+                            'text-green-600': endpoint.latest_result?.is_healthy,
+                            'text-red-600': !endpoint.latest_result?.is_healthy
+                        }"
                     >
-                        {{ endpoint.url }}
-                    </a>
-                </li>
-            </ul>
-        </div>
+                        {{ endpoint.latest_result?.is_healthy ? 'Healthy' : 'Unhealthy' }}
+                    </span>
+                </p>
+                <p><strong>Checked At:</strong> {{ endpoint.latest_result?.checked_at ?? 'N/A' }}</p>
+                <p><strong>Response Time:</strong> {{ endpoint.latest_result?.response_time_ms ?? 'N/A' }} ms</p>
+                <p v-if="endpoint.latest_result?.error_message">
+                    <strong>Error:</strong> {{ endpoint.latest_result.error_message }}
+                </p>
+            </div>
+        </li>
+    </ul>
+</div>
+
         <div v-else-if="selectedClientId" class="text-gray-500">
             No endpoints found for the selected client, or failed to load.
         </div>

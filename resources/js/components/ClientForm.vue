@@ -54,13 +54,13 @@ const submitForm = async() => {
             endpoints: endpointsArray,
         });
 
-        console.log('Server response:', response.data);
+       // console.log('Server response:', response.data);
 
         showMessage('Form submitted successfully! Your data has been received.', 'success');
 
         // Optionally reset
-        // form.reset('email', 'endpoints');
-        // emit('clientSubmitted');
+         form.reset('email', 'endpoints');
+         emit('clientSubmitted');
     } catch (error) {
         console.error('Submission error:', error.response?.data || error.message);
         const msg = error.response?.data?.message || 'Something went wrong.';
