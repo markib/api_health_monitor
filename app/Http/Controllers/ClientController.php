@@ -40,6 +40,7 @@ class ClientController extends Controller
      */
     public function store(Request $request)
     {
+    
         // Validate the incoming request data
         // 'email' must be required, a valid email format, and unique in the 'clients' table
         // 'endpoints' must be required, an array, and contain at least one item
@@ -59,7 +60,7 @@ class ClientController extends Controller
             foreach ($request->endpoints as $url) {
                 $client->endpoints()->create(['url' => $url]);
             }
-
+            
             // Invalidate the Redis cache for 'clients_with_endpoints'.
             // This is crucial because ClientController@index uses this cache,
             // and invalidating it ensures that the next time clients are fetched,
@@ -71,7 +72,7 @@ class ClientController extends Controller
             return response()->json([
                 'message' => 'Client and endpoints saved successfully!',
                 'client_id' => $client->id
-            ], 201);
+            ], 200);
         } catch (Throwable $e) {
             // Catch any unexpected exceptions that occur during the process.
             // Log the error for debugging purposes, including the error message and the request data.

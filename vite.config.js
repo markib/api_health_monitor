@@ -23,10 +23,10 @@ export default defineConfig({
     server: {
         // This helps resolve potential IPv6 issues ([::1]) or general host problems
         // and ensures HMR works correctly.
-        host: '127.0.0.1', // Or '0.0.0.0' if you're in a VM/Docker and need external access
+        host: 'localhost', // Or '0.0.0.0' if you're in a VM/Docker and need external access
         port: 5173, // Make sure this matches the port Vite is trying to use
         hmr: {
-            host: '127.0.0.1', // Should match the main host
+            host: 'localhost', // Should match the main host
         },
     },
 });

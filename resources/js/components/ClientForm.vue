@@ -24,11 +24,11 @@ const messageType = ref('');
 const showMessage = (msg, type = 'success') => {
     message.value = msg;
     messageType.value = type;
-    // Automatically hide the message after 5 seconds
+    // THIS setTimeout SHOULD BE ACTIVE to hide the message after a delay
     setTimeout(() => {
         message.value = '';
         messageType.value = '';
-    }, 5000);
+    }, 5000); // Message will hide after 5 seconds
 };
 
 /**
@@ -46,15 +46,20 @@ const submitForm = () => {
     // Inertia's useForm handles the actual POST request
     // This assumes you have a Laravel POST route at '/api/clients'
     // that handles storing the client and invalidates the Redis cache.
-    form.post('/api/clients', { // POSTs to the /api/clients route managed by ClientSubmissionController
+    form.post('/api/clients', { // POSTs to the /api/clients route managed by ClientController
         preserveScroll: true, // Keep scroll position after submission
         onSuccess: () => {
+            console.log('Success response'); // Keep this for debugging if needed
             showMessage('Form submitted successfully! Your data has been received.', 'success');
-            // Clear form fields after successful submission
-            form.reset('email', 'endpoints');
-            message.value = ''; // Clear message after success
+
+            // --- UNCOMMENT THESE LINES ---
+            // These lines clear the form and reset the message after it's displayed for 5 seconds
+            form.reset('email', 'endpoints'); // Clears the form fields
+            message.value = ''; // This will be set to empty by setTimeout, but also ensures a clean state immediately after reset
+
             // Emit an event to the parent component to signal that a new client was submitted
-            emit('clientSubmitted');
+            // The parent Dashboard.vue will listen to this to refetch the client list
+           // emit('clientSubmitted');
         },
         onError: (errors) => {
             // Inertia automatically populates form.errors with validation errors
@@ -80,8 +85,8 @@ const submitForm = () => {
     <Head title="Client Form" />
 
     <div class="flex items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8 bg-gray-100 font-inter">
-        <div class="bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-200">
-            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Client Information Form</h2>
+        <div class="bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-200 form-container">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6 form-title">Client Information Form</h2>
 
             <form @submit.prevent="submitForm" class="space-y-4">
                 <!-- Email Address Input -->
@@ -97,7 +102,7 @@ const submitForm = () => {
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out"
                     />
                     <!-- Display validation error for email if it exists -->
-                    <div v-if="form.errors.email" class="text-red-600 text-xs mt-1">{{ form.errors.email }}</div>
+                    <div v-if="form.errors.email" class="text-red-600 text-xs mt-1 error-message">{{ form.errors.email }}</div>
                 </div>
 
                 <!-- Endpoints Textarea -->
@@ -113,14 +118,14 @@ const submitForm = () => {
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm resize-y transition duration-150 ease-in-out"
                     ></textarea>
                     <!-- Display validation error for endpoints if it exists -->
-                    <div v-if="form.errors.endpoints" class="text-red-600 text-xs mt-1">{{ form.errors.endpoints }}</div>
+                    <div v-if="form.errors.endpoints" class="text-red-600 text-xs mt-1 error-message">{{ form.errors.endpoints }}</div>
                 </div>
 
                 <!-- Submit Button -->
                 <button
                     type="submit"
                     :disabled="form.processing"
-                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-white"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-white submit-button"
                     :class="{
                         'bg-blue-400 cursor-not-allowed': form.processing,
                         'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out transform hover:scale-105': !form.processing
@@ -142,7 +147,7 @@ const submitForm = () => {
             <div
                 v-if="message"
                 id="message-box"
-                class="mt-6 p-3 rounded-md text-sm"
+                class="mt-6 p-3 rounded-md text-sm message-box"
                 :class="{
                     'bg-green-100 border border-green-400 text-green-700': messageType === 'success',
                     'bg-red-100 border border-red-400 text-red-700': messageType === 'error'
@@ -155,3 +160,77 @@ const submitForm = () => {
     </div>
 </template>
 
+<style>
+/* Custom font for better aesthetics */
+body {
+    font-family: "Inter", sans-serif;
+}
+
+/* Enhancements for the form container */
+.form-container {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease-in-out;
+}
+
+.form-container:hover {
+    transform: translateY(-5px);
+}
+
+/* Styling for the form title */
+.form-title {
+    color: #333; /* Darker gray for better contrast */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.05); /* Subtle text shadow */
+}
+
+/* Additional styling for input fields (though Tailwind handles most) */
+input[type="email"],
+textarea {
+    transition: all 0.2s ease-in-out;
+}
+
+input[type="email"]:focus,
+textarea:focus {
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5); /* Blue glow on focus */
+    border-color: #3b82f6; /* Blue border on focus */
+}
+
+/* Submit button enhancements */
+.submit-button {
+    background: linear-gradient(to right, #3b82f6, #2563eb); /* Gradient background */
+    border: none; /* Remove default border */
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.submit-button:hover {
+    background: linear-gradient(to right, #2563eb, #1e40af); /* Darker gradient on hover */
+}
+
+.submit-button:active {
+    transform: translateY(1px); /* Slight press effect */
+}
+
+/* Subtle animation for the message box */
+.message-box {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Styling for validation error messages */
+.error-message {
+    font-size: 0.75rem; /* Smaller font size */
+    color: #dc2626; /* Red color */
+    margin-top: 0.25rem; /* Small margin-top */
+}
+</style>

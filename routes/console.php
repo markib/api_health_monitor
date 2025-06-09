@@ -9,4 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 
-Schedule::command('app:monitor-endpoints')->everyFiveMinutes()->withoutOverlapping();
+Schedule::command('app:monitor-endpoints')->everyFiveSeconds()->withoutOverlapping();
