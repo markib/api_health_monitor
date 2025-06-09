@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
-import tailwindcss from '@tailwindcss/vite'; // Keep this if you're using it
+
 import vue from '@vitejs/plugin-vue'; // Import the Vue plugin
 
 export default defineConfig({
@@ -18,7 +18,7 @@ export default defineConfig({
                 },
             },
         }),
-        tailwindcss(), // Ensure this is correctly configured if it's a custom plugin
+        
     ],
     server: {
         // This helps resolve potential IPv6 issues ([::1]) or general host problems

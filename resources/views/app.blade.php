@@ -7,7 +7,7 @@
     <title>{{ config('app.name', 'API Health monitoring') }}</title>
     <meta name="theme-color" content="#6777ef" />
 
-    <link rel="manifest" href="{{ asset('/manifest.json') }}">
+    <link rel="manifest" href="{{ asset('build/manifest.json') }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

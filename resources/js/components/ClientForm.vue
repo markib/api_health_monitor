@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { useForm, Head } from '@inertiajs/inertia-vue3';
+import { useForm, Head } from '@inertiajs/vue3';
 
 // Define emitted events: 'clientSubmitted' will be emitted when a client is successfully added
 const emit = defineEmits(['clientSubmitted']);

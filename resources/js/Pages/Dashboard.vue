@@ -34,7 +34,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { Head } from '@inertiajs/inertia-vue3';
+import { Head } from '@inertiajs/vue3';
 import ClientEndpoints from '@/Components/ClientEndpoints.vue';
 import ClientForm from '@/Components/ClientForm.vue'; // Adjust path if needed
 
