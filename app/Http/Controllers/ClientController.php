@@ -6,6 +6,7 @@ use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Artisan;
 use Throwable;
 
 class ClientController extends Controller
@@ -111,4 +112,20 @@ class ClientController extends Controller
             ], 500);
         }
     }
+
+    public function monitorEndpoints(Client $client)
+    {
+     
+        try {
+            Artisan::call('app:monitor-endpoints', [
+                '--client_id' => $client->id
+            ]);
+    
+            return response()->json(['message' => "Monitoring jobs dispatched for {$client->email}"]);
+        } catch (\Throwable $e) {
+            \Log::error("Failed to dispatch monitor job for client {$client->id}: " . $e->getMessage());
+            return response()->json(['message' => 'Monitoring failed.'], 500);
+        }
+    }
+
 }

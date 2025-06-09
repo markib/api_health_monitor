@@ -17,7 +17,10 @@ class MonitorEndpoints extends Command
      *
      * @var string
      */
-    protected $signature = 'app:monitor-endpoints {--sync : Run jobs synchronously}';
+    protected $signature = 'app:monitor-endpoints 
+                        {--client_id= : ID of the client to monitor}
+                        {--sync : Run jobs synchronously}';
+
 
     /**
      * The console command description.
@@ -35,14 +38,21 @@ class MonitorEndpoints extends Command
     {
         
         $sync = $this->option('sync');
+        $clientId = $this->option('client_id');
         $chunkSize = 100; // Process in batches
 
         Log::info('Starting endpoint monitoring process.', [
             'mode' => $sync ? 'sync' : 'queue',
-            'chunkSize' => $chunkSize
+            'chunkSize' => $chunkSize,
+            'client_id' => $clientId,
         ]);
 
-        Endpoint::active()->chunk($chunkSize, function ($endpoints)  use ($sync) {
+        $query = Endpoint::active();
+        if ($clientId) {
+            $query->where('client_id', $clientId);
+        }
+
+        $query->chunk($chunkSize, function ($endpoints)  use ($sync) {
             Log::info('Processing new chunk', ['count' => $endpoints->count()]);
 
             $endpoints->each(function ($endpoint) use ($sync) {

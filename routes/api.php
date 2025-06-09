@@ -8,4 +8,6 @@ use App\Http\Controllers\ClientController;
     Route::get('/clients', [ClientController::class, 'index']);
     Route::post('/clients', [ClientController::class, 'store']);
     Route::get('/clients/{client}', [ClientController::class, 'show']);
+    Route::post('/clients/{client}/monitor', [ClientController::class, 'monitorEndpoints']);
+
 // });

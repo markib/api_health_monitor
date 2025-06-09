@@ -17,6 +17,9 @@ const selectedClientEndpoints = ref([]);
 const showConfirmDialog = ref(false);
 // Reactive state to store the URL being confirmed
 const urlToOpen = ref('');
+// --- New state for messages within ClientEndpoints.vue ---
+const message = ref('');
+const messageType = ref('');
 
 /**
  * Fetches endpoints for a specific client ID from the API.
@@ -87,6 +90,40 @@ const cancelVisit = () => {
     showConfirmDialog.value = false;
     urlToOpen.value = '';
 };
+
+const monitorApiHealth = async () => {
+    if (!selectedClientId.value) {
+        return;
+    }
+
+    try {
+        
+        const response = await axios.post(`/clients/${selectedClientId.value}/monitor`);
+          // Check if the response was successful and contains the message
+        if (response.data && response.data.message) {
+            showMessage(response.data.message, 'success');
+        } else {
+            showMessage('Monitoring job dispatched (no specific message from server).', 'success');
+        }
+    } catch (error) {
+        console.error('Health check failed', error);
+        let errorMessage = 'Failed to dispatch health check.';
+        if (error.response && error.response.data && error.response.data.message) {
+            errorMessage = `Health check failed: ${error.response.data.message}`;
+        }
+        showMessage(errorMessage, 'error');
+    }
+};
+
+const showMessage = (msg, type = 'success') => {
+    message.value = msg;
+    messageType.value = type;
+    // THIS setTimeout SHOULD BE ACTIVE to hide the message after a delay
+    setTimeout(() => {
+        message.value = '';
+        messageType.value = '';
+    }, 5000); // Message will hide after 5 seconds
+};
 </script>
 
 <template>
@@ -150,6 +187,15 @@ const cancelVisit = () => {
             </div>
         </li>
     </ul>
+
+    <button
+    v-if="selectedClientEndpoints.length > 0"
+    @click="monitorApiHealth"
+    class="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+>
+    Monitor API Health
+</button>
+
 </div>
 
         <div v-else-if="selectedClientId" class="text-gray-500">
