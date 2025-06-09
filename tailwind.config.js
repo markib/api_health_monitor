@@ -6,10 +6,7 @@ export default {
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php', // Your blade views
         './resources/js/**/*.vue',          // Crucial for Vue components
-        './resources/js/**/*.js',   
-        './resources/**/*.blade.php',
-        './resources/**/*.js',
-        './resources/**/*.vue',
+        './resources/js/**/*.js'
     ],
     theme: {
         extend: {

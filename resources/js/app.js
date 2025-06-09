@@ -4,7 +4,7 @@ import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/inertia-vue3'; // Use @inertiajs/vue3 for Vue 3 with Inertia.js
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
-// import '../css/app.css';
+import '../css/app.css';
 // Import your global App.vue layout component
 import AppLayout from './Pages/App.vue'; // Assuming App.vue is located at the root of your JS directory
 
