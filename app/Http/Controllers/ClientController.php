@@ -40,7 +40,7 @@ class ClientController extends Controller
      */
     public function store(Request $request)
     {
-    
+        
         // Validate the incoming request data
         // 'email' must be required, a valid email format, and unique in the 'clients' table
         // 'endpoints' must be required, an array, and contain at least one item
@@ -50,11 +50,12 @@ class ClientController extends Controller
             'endpoints' => ['required', 'array', 'min:1'],
             'endpoints.*' => ['required', 'url'],
         ]);
-
+        
         try {
+            
             // Create a new Client record in the database with the provided email
             $client = Client::create(['email' => $request->email]);
-
+            
             // Iterate over the array of endpoints provided in the request
             // and create an Endpoint record for each, associating it with the newly created client
             foreach ($request->endpoints as $url) {

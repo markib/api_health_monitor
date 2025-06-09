@@ -36,7 +36,7 @@
 import { ref, onMounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import ClientEndpoints from '@/Components/ClientEndpoints.vue';
-import ClientForm from '@/Components/ClientForm.vue'; // Adjust path if needed
+import ClientForm from '@/Components/ClientForm.vue'; 
 
 // Reactive state to hold the list of clients fetched from the API
 const clients = ref([]);

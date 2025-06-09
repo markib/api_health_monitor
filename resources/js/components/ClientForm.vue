@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useForm, Head } from '@inertiajs/vue3';
+import axios from 'axios';
 
 // Define emitted events: 'clientSubmitted' will be emitted when a client is successfully added
 const emit = defineEmits(['clientSubmitted']);
@@ -35,48 +36,36 @@ const showMessage = (msg, type = 'success') => {
  * Handles the form submission using Inertia's post method.
  * Inertia automatically handles form data, loading states, and redirects/errors.
  */
-const submitForm = () => {
+const submitForm = async() => {
     // Basic client-side validation before sending
     if (!form.email.trim() || !form.endpoints.trim()) {
         showMessage('Please fill in both email and endpoints fields.', 'error');
         return;
     }
 
-    // Transform endpoints string into an array for submission
-    // Inertia's useForm handles the actual POST request
-    // This assumes you have a Laravel POST route at '/api/clients'
-    // that handles storing the client and invalidates the Redis cache.
-    form.post('/api/clients', { // POSTs to the /api/clients route managed by ClientController
-        preserveScroll: true, // Keep scroll position after submission
-        onSuccess: () => {
-            console.log('Success response'); // Keep this for debugging if needed
-            showMessage('Form submitted successfully! Your data has been received.', 'success');
+    const endpointsArray = form.endpoints
+        .split('\n')
+        .map((e) => e.trim())
+        .filter((e) => e !== '');
 
-            // --- UNCOMMENT THESE LINES ---
-            // These lines clear the form and reset the message after it's displayed for 5 seconds
-            form.reset('email', 'endpoints'); // Clears the form fields
-            message.value = ''; // This will be set to empty by setTimeout, but also ensures a clean state immediately after reset
+      try {
+        const response = await axios.post('/clients', {
+            email: form.email,
+            endpoints: endpointsArray,
+        });
 
-            // Emit an event to the parent component to signal that a new client was submitted
-            // The parent Dashboard.vue will listen to this to refetch the client list
-           // emit('clientSubmitted');
-        },
-        onError: (errors) => {
-            // Inertia automatically populates form.errors with validation errors
-            console.error('Submission failed:', errors);
-            if (errors && Object.keys(errors).length > 0) {
-                // Display the first error message or a generic one
-                // You might iterate over errors for more detailed display
-                showMessage(`Submission failed: ${Object.values(errors)[0]}`, 'error');
-            } else {
-                showMessage('An unknown error occurred during submission.', 'error');
-            }
-        },
-        onFinish: () => {
-            // This runs whether success or error
-            // Loading state is automatically handled by form.processing
-        },
-    });
+        console.log('Server response:', response.data);
+
+        showMessage('Form submitted successfully! Your data has been received.', 'success');
+
+        // Optionally reset
+        // form.reset('email', 'endpoints');
+        // emit('clientSubmitted');
+    } catch (error) {
+        console.error('Submission error:', error.response?.data || error.message);
+        const msg = error.response?.data?.message || 'Something went wrong.';
+        showMessage(`Submission failed: ${msg}`, 'error');
+    }
 };
 </script>
 
