@@ -23,7 +23,7 @@ class CheckEndpointStatus implements ShouldQueue
         public Endpoint $endpoint
     ) {
         Log::info("Constructing CheckEndpointStatus: ID={$endpoint->id}, URL={$endpoint->url}, ClientEmail=" . ($endpoint->client ? $endpoint->client->email : 'null'));
-        $this->onQueue('emails');
+        $this->onQueue('monitoring');
     }
 
     public function handle(): void

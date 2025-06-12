@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Redis;
 use Throwable;
 
 class ClientController extends Controller
@@ -15,7 +16,36 @@ class ClientController extends Controller
     public function index()
     {
         try {
-            
+            // --- PROACTIVE REDIS CONNECTION CHECK ---
+            // Attempt to ping the Redis server to check the connection status.
+            // If Redis is not running or not accessible, Redis::ping() will throw an exception.
+            try {
+                Redis::ping();
+            } catch (\Predis\Connection\ConnectionException $e) {
+                // Catch Predis connection-specific exceptions.
+                Log::error('Redis connection failed', [
+                    'error' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ]);
+                return response()->json([
+                    'message' => 'Failed to connect to Redis cache. Please check Redis server status.',
+                    'error' => $e->getMessage()
+                ], 500);
+            } catch (\Throwable $e) {
+                // Catch any other general exceptions during Redis interaction
+                Log::error('Unexpected Redis error during ping:', [
+                    'error' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ]);
+                return response()->json([
+                    'message' => 'An unexpected error occurred with the Redis cache.',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+            // --- END PROACTIVE REDIS CONNECTION CHECK ---
+
 
             $clients = Cache::store('redis')->remember('clients_with_endpoints', 60, function () {
                 return Client::with(['endpoints' => function ($query) {
@@ -25,7 +55,15 @@ class ClientController extends Controller
 
             return response()->json($clients, 200);
         } catch (\Throwable $e) {
-            Log::error('Failed to fetch clients:', ['error' => $e->getMessage()]);
+            // This catch block will handle other potential errors that are not directly
+            // related to the Redis connection (e.g., database query errors, model issues).
+            Log::error('Failed to fetch clients from cache or database (general error):', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(), // Full stack trace for deep debugging
+            ]);
+
             return response()->json([
                 'message' => 'Failed to load clients.',
                 'error' => $e->getMessage()
@@ -123,7 +161,7 @@ class ClientController extends Controller
     
             return response()->json(['message' => "Monitoring jobs dispatched for {$client->email}"]);
         } catch (\Throwable $e) {
-            \Log::error("Failed to dispatch monitor job for client {$client->id}: " . $e->getMessage());
+            Log::error("Failed to dispatch monitor job for client {$client->id}: " . $e->getMessage());
             return response()->json(['message' => 'Monitoring failed.'], 500);
         }
     }

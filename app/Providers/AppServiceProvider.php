@@ -20,10 +20,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // $scheduleCallback = require base_path('routes/schedule.php');
+        $this->app->booted(function () {
+            $schedule = app(Schedule::class);
 
-        // $schedule = app(Schedule::class);
-
-        // $scheduleCallback($schedule);
+            $schedule->command('app:monitor-endpoints')
+                ->everyTenMinutes()
+                ->withoutOverlapping();
+        });
+       
     }
 }
